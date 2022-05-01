@@ -1,0 +1,16 @@
+Bot:
+  Signals:
+    class: bots.random.signals.MySignals
+    params:
+      - exchange: 'ftx'
+        pair: 'ETH/BTC'
+  Strategy:
+    class: bots.random.strategy.MyStrategy
+  Sleep: 30
+  Timer:
+    class: common.time.time.Time
+    params:
+      - pastDays: 1
+        speed: 3000
+
+
