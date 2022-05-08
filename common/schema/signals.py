@@ -24,7 +24,15 @@ SignalsSchema = """
           ]
         }
       }
-    }
+    },
+    { "name": "context", "type": {
+        "type": "record",
+        "name": "context",
+        "fields": [
+            {"name": "exchange", "type": "string"},
+            {"name": "pair", "type": "string"}
+        ]
+    }}    
   ]
 }
 """

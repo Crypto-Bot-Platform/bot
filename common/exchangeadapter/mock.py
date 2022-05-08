@@ -1,7 +1,6 @@
 import datetime
 import time
 import uuid
-from os import environ
 
 import psycopg2
 from pymongo import MongoClient
@@ -10,27 +9,26 @@ from common.exchangeadapter.abstract import ExchangeAdapter
 from eslogger import Logger
 
 from common.time.time import Time
+from common.utils.environment import parse_environ
 
 
 class MockExchangeAdapter(ExchangeAdapter):
     def __init__(self, exchange_name: str, time: Time = None, config=None):
         super().__init__(exchange_name)
         self.name = exchange_name
-        self.log = Logger(self.__class__.__name__ + exchange_name)
+        params = parse_environ(self.__class__.__name__)
         self.time = time if time else Time()
-        self.bot_id = environ['BOT_ID'] if 'BOT_ID' in environ else "test-bot-01"
-        mongo_host = environ['MONGODB_HOST'] if 'MONGODB_HOST' in environ else "localhost"
-        mongo_port = environ['MONGODB_PORT'] if 'MONGODB_PORT' in environ else "27017"
-        db_name = environ['SQLDB_NAME']
-        db_user = environ['SQLDB_USER']
-        db_pass = environ['SQLDB_PASS']
-        db_host = environ['SQLDB_HOST']
-        db_port = int(environ['SQLDB_PORT'])
-        print(f"*** Environment variables: SQLDB_HOST={db_host}, SQLDB_PORT={db_port}, SQLDB_NAME = {db_name},"
-              f"SQLDB_USER={db_user}, SQLDB_PASS={db_pass}, BOT_ID={self.bot_id}, MONGODB_HOST={mongo_host}, "
-              f"MONGODB_PORT={mongo_port}")
+        self.bot_id = params['bot_id']
+        mongo_host = params['mongo_host']
+        mongo_port = params['mongo_port']
+        db_name = params['db_name']
+        db_user = params['db_user']
+        db_pass = params['db_pass']
+        db_host = params['db_host']
+        db_port = int(params['db_port'])
         self.conn = psycopg2.connect(f"postgres://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}")
         self.db_client = MongoClient(host=mongo_host, port=int(mongo_port))
+        self.log = Logger(f"{self.bot_id}/{self.__class__.__name__}/{exchange_name}")
 
     def fetch_balance(self, params={}):
         collection = self.db_client['mock']['balance']

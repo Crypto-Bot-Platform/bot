@@ -1,9 +1,10 @@
 from typing import List
 
 from common.exchangeadapter.abstract import ExchangeAdapter
+from common.order.validator import OrderValidator
 
 
-class PortfolioManager:
+class PortfolioManager(OrderValidator):
 
     def __init__(self, exchanges: List[ExchangeAdapter]):
         self.exchanges = {}
@@ -16,7 +17,14 @@ class PortfolioManager:
         exchange = self.exchanges[exchange_name]
         self.balance[exchange.exchangeName] = exchange.fetch_balance()
 
-    def validate(self, exchange_name: str, symbol: str, side: str, type: str, amount: float, price: float = None) -> bool:
+    def get_available(self, exchange_name: str, coin: str) -> float:
+        if exchange_name in self.balance and coin in self.balance[exchange_name]:
+            free = self.balance[exchange_name][coin]['free']
+            return float(free)
+
+        return 0
+
+    def validate(self, exchange_name: str, symbol: str, side: str, type: str, amount: float, price: float = None, params={}) -> bool:
         [coin, base] = symbol.split('/')
         exchange = self.exchanges[exchange_name]
         if side == 'buy':

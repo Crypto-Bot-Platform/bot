@@ -1,9 +1,10 @@
 from typing import List
 
 from common.exchangeadapter.abstract import ExchangeAdapter
+from common.order.validator import OrderValidator
 
 
-class TransactionManager:
+class TransactionManager(OrderValidator):
     def __init__(self, exchanges: List[ExchangeAdapter]):
         self.exchanges = {}
         for exchange in exchanges:

@@ -1,16 +1,35 @@
 Bot:
+  Timer:
+    pastDays: 3 # Start time is {pastDays} before now
+    speed: 30000 # How fast time is going
+  OpenOrderManager:
+    class: common.openorder.manager.OpenOrderManager
+    wait: 60 # In Seconds. How long we wait till perform an action (cancel) on open transactions
+  Validators:
+    - name: TransactionManager
+      class: common.transaction.manager.TransactionManager
+    - name: PortfolioManager
+      class: common.portfolio.manager.PortfolioManager
+  ExchangeAdapters:
+    - class: common.exchangeadapter.mock.MockExchangeAdapter
+      name: 'binanceus'
+  ###############################
+  # Configure the bot strategy
+  ###############################
   Signals:
     class: bots.random.signals.MySignals
     params:
-      - exchange: 'ftx'
-        pair: 'ETH/BTC'
+      - exchange: 'binanceus'
+      - pair: 'ETH/BTC'
   Strategy:
     class: bots.random.strategy.MyStrategy
-  Sleep: 30
-  Timer:
-    class: common.time.time.Time
     params:
-      - pastDays: 1
-        speed: 3000
+      - exchange: 'binanceus'
+      - portfolio: $PortfolioManager
+  Config:
+    Sleep: 30 # In Seconds. How often the bot wakes up to make calculations
+
+
+
 
 

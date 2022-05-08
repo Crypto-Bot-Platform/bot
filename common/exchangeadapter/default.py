@@ -3,17 +3,21 @@ from eslogger import Logger
 from common.exchangeadapter.abstract import ExchangeAdapter
 import ccxt
 
+from common.utils.environment import parse_environ
+
 
 class DefaultExchangeAdapter(ExchangeAdapter):
     def __init__(self, exchange_name: str, config=None):
         super().__init__(exchange_name)
         self.name = exchange_name
+        params = parse_environ(self.__class__.__name__)
         exchange_class = getattr(ccxt, exchange_name)
         if config is not None:
             self.client = exchange_class(config)
         else:
             self.client = exchange_class()
-        self.log = Logger(self.__class__.__name__ + exchange_name)
+        self.bot_id = params['bot_id']
+        self.log = Logger(f"{self.bot_id}/{self.__class__.__name__}/{exchange_name}")
 
     def fetch_balance(self, params={}):
         res = self.client.fetch_balance(params)

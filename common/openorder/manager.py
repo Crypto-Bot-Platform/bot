@@ -1,22 +1,24 @@
 import datetime
 import threading
-from os import environ
 from typing import List
 
 from eslogger import Logger
 from datetime import timedelta
 from common.exchangeadapter.abstract import ExchangeAdapter
+from common.portfolio.manager import PortfolioManager
 from common.time.time import Time
+from common.utils.environment import parse_environ
 
 
 class OpenOrderManager:
-    def __init__(self, exchanges: List[ExchangeAdapter], waiting_period: timedelta, time: Time = None):
+    def __init__(self, exchanges: List[ExchangeAdapter], waiting_period: timedelta, portfolio: PortfolioManager, time: Time = None):
         self.time = time if time else Time()
-        elastic_host = environ['ELASTIC_HOST']
-        elastic_port = environ['ELASTIC_PORT']
-        self.bot_id = environ['BOT_ID'] if 'BOT_ID' in environ else "test-bot-01"
-        print(f"*** Environment variables: ELASTIC_HOST={elastic_host}, ELASTIC_PORT={elastic_port}")
-        self.log = Logger(f"{self.bot_id}:{self.__class__.__name__}", host=elastic_host, port=int(elastic_port))
+        self.portfolio = portfolio
+        params = parse_environ(self.__class__.__name__)
+        elastic_host = params['elastic_host']
+        elastic_port = params['elastic_port']
+        self.bot_id = params['bot_id']
+        self.log = Logger(f"{self.bot_id}/{self.__class__.__name__}", host=elastic_host, port=int(elastic_port))
         self.exchanges = {}
         for exchange in exchanges:
             self.exchanges[exchange.exchangeName] = exchange
@@ -38,6 +40,6 @@ class OpenOrderManager:
             elif (start_time + self.waiting_time) <= datetime.datetime.now():
                 self.exchanges[exchange_name].cancel_order(order['id'])
                 self.log.info(f"Canceling order {order['id']}, timeout...")
-
+            self.portfolio.sync(exchange_name)
         threading.Thread(target=execute).start()
 

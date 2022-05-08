@@ -1,27 +1,21 @@
 import threading
-import uuid
 
 from dependency_injector.wiring import Provide, inject
 from application import Application
 
-
-from common.signals.default import Signals
-from common.strategy.default import Strategy
-from common.time.time import Time
-
-
 @inject
 def main(
-        signals: Signals = Provide[Application.signals],
-        strategy: Strategy = Provide[Application.strategy],
-        time: Time = Provide[Application.time]
+        objects = Provide[Application.Objects]
 ) -> None:
     config = Application.config
-    bot_id = str(uuid.uuid4())
-    signals.init(bot_id, time)
-    strategy.init(bot_id)
+    time = objects['Timer']
+    strategy = objects['Strategy']
+    signals = objects['Signals']
+    order_executor = objects['OrderExecutor']
+    signals.init(time)
 
-    threading.Thread(target=signals.run, args=(config['Bot']['Sleep'],)).start()
+    order_executor.listen()
+    threading.Thread(target=signals.run, args=(config['Bot']['Config']['Sleep'],)).start()
     threading.Thread(target=strategy.listen).start()
 
 

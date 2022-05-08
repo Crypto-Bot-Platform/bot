@@ -1,5 +1,6 @@
 import datetime
 import unittest
+from os import environ
 
 from common.exchangeadapter.mock import MockExchangeAdapter
 from common.time.time import Time
@@ -7,6 +8,7 @@ from common.time.time import Time
 
 class TestMockExchangeAdapter(unittest.TestCase):
     def setUp(self) -> None:
+        environ['BOT_ID'] = "unit-testing-1"
         self.adapter = MockExchangeAdapter("binanceus", Time())
 
     def test_fetch_balance(self):
