@@ -1,7 +1,7 @@
 Bot:
   Timer:
-    pastDays: 3 # Start time is {pastDays} before now
-    speed: 30000 # How fast time is going
+    pastDays: 0.5 # Start time is {pastDays} before now
+    speed: 3000 # How fast time is going
   OpenOrderManager:
     class: common.openorder.manager.OpenOrderManager
     wait: 60 # In Seconds. How long we wait till perform an action (cancel) on open transactions

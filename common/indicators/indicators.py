@@ -18,7 +18,9 @@ class Indicators:
         db_port = int(params['db_port'])
         self.bot_id = params['bot_id']
         self.conn = psycopg2.connect(f"postgres://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}")
-        self.log = Logger(f"{self.bot_id}/{self.__class__.__name__}")
+        elastic_host = params['elastic_host']
+        elastic_port = params['elastic_port']
+        self.log = Logger(f"{self.bot_id}/{self.__class__.__name__}", host=elastic_host, port=int(elastic_port))
 
     def RSI(self):
         c = self.conn.cursor()

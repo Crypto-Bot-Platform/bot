@@ -8,6 +8,7 @@ from common.exchangeadapter.abstract import ExchangeAdapter
 from common.portfolio.manager import PortfolioManager
 from common.time.time import Time
 from common.utils.environment import parse_environ
+from common.utils.statistics import StatisticsRecorder
 
 
 class OpenOrderManager:
@@ -24,20 +25,27 @@ class OpenOrderManager:
             self.exchanges[exchange.exchangeName] = exchange
 
         self.waiting_time = waiting_period
+        self.sr = StatisticsRecorder()
 
     def start(self, exchange_name: str, symbol: str, id: str):
         start_time = datetime.datetime.now()
+        self.portfolio.sync(exchange_name)
 
         def execute():
             order = self.exchanges[exchange_name].fetch_order(id, symbol)
             while order['status'] != 'closed' and (start_time + self.waiting_time) > datetime.datetime.now():
+                self.sr.post_order(order)
                 self.time.sleep(1)
                 order = self.exchanges[exchange_name].fetch_order(id, symbol)
+
             if order['status'] == 'closed':
                 self.log.info(f"Closed order: [Id:{order['id']}, Exchange:{exchange_name}, "
                               f"Symbol:{order['symbol']}, Side:{order['side']}, Type:{order['type']}, "
                               f"Amount:{order['amount']}, Price:{order['price']}]")
+                self.sr.post_order(order)
             elif (start_time + self.waiting_time) <= datetime.datetime.now():
+                order['status'] = 'cancel'
+                self.sr.post_order(order)
                 self.exchanges[exchange_name].cancel_order(order['id'])
                 self.log.info(f"Canceling order {order['id']}, timeout...")
             self.portfolio.sync(exchange_name)

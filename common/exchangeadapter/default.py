@@ -17,7 +17,9 @@ class DefaultExchangeAdapter(ExchangeAdapter):
         else:
             self.client = exchange_class()
         self.bot_id = params['bot_id']
-        self.log = Logger(f"{self.bot_id}/{self.__class__.__name__}/{exchange_name}")
+        elastic_host = params['elastic_host']
+        elastic_port = params['elastic_port']
+        self.log = Logger(f"{self.bot_id}/{self.__class__.__name__}/{exchange_name}", host=elastic_host, port=int(elastic_port))
 
     def fetch_balance(self, params={}):
         res = self.client.fetch_balance(params)

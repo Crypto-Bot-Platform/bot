@@ -1,3 +1,4 @@
+import math
 import threading
 import time
 from typing import List
@@ -9,6 +10,8 @@ from common.order.manager import OrderManager
 from common.order.validator import OrderValidator
 from common.schema.executor import ExecutorSchema
 from common.utils.environment import parse_environ
+
+lock = threading.Lock()
 
 
 class OrderExecutor:
@@ -28,15 +31,16 @@ class OrderExecutor:
         self.log = Logger(self.__class__.__name__ + self.bot_id, host=elastic_host, port=int(elastic_port))
 
     def handle(self, data):
-        while self.in_progress:
-            print("Waiting for order execution completion")
-            time.sleep(0.1)
-        self.in_progress = True
+        def truncate(num, n):
+            integer = math.floor(num * (10 ** n)) / (10 ** n)
+            return float(integer)
+
+        lock.acquire()
         try:
             print(f"*** In Handle request. Data: {data}")
             # Handle execute request
             exchange, symbol, side, type, amount, price = \
-                data['exchange'], data['symbol'], data['side'], data['type'], data['amount'], data['price']
+                data['exchange'], data['symbol'], data['side'], data['type'], truncate(data['amount'], 4), data['price']
 
             # Validate first
             for validator in self.validators:
@@ -54,7 +58,7 @@ class OrderExecutor:
             self.om.execute(exchange, symbol, side, type, amount, price)
         finally:
             print(f"*** Finishing handling request. Data: {data}")
-            self.in_progress = False
+            lock.release()
 
     def listen(self):
         threading.Thread(target=self.em.wait_for_command, args=(self.address, ExecutorSchema, self.handle)).start()

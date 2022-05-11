@@ -15,9 +15,10 @@ class MyStrategy(Strategy):
             amount_to_buy = 0.5 * balance/price
             self.order(exchange, pair, "buy", "market", amount_to_buy)
 
-        if "RSI" in indicators and indicators['RSI'] < 20:
+        if "RSI" in indicators and indicators['RSI'] < 30:
             # Sell
             balance = self.portfolio.get_available(exchange, coin)
+            print(f"Available balance of {coin} is {balance}")
             self.order(exchange, pair, "sell", "market", balance)
 
 

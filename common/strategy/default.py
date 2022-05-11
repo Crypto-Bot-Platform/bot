@@ -1,4 +1,5 @@
 import collections
+import math
 import threading
 from datetime import datetime
 
@@ -37,13 +38,14 @@ class Strategy:
         self.on(res, data["context"])
 
     def order(self, exchange: str, symbol: str, side: str, type: str, amount: float, price: float=0):
+        print(f"Sending command to {side} {amount} of {symbol}")
         self.em.send_command_to_address(f"{self.bot_id}-executor", ExecutorSchema, {
             "timestamp": int(datetime.now().timestamp() * 1000),
             "exchange": exchange,
             "symbol": symbol,
             "side": side,
             "type": type,
-            "amount": amount,
+            "amount": float(math.floor(amount * (10**7)) / (10**7)),
             "price": price
         })
 

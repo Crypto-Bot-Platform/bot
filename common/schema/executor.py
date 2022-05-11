@@ -9,8 +9,8 @@ ExecutorSchema = """
     {"name": "symbol", "type": "string"},
     {"name": "side", "type": "string"},
     {"name": "type", "type": "string"},
-    {"name": "amount", "type": "float"},
-    {"name": "price", "type": ["null", "float"], "default": null}
+    {"name": "amount", "type": "double"},
+    {"name": "price", "type": ["null", "double"], "default": null}
   ]
 }
 """

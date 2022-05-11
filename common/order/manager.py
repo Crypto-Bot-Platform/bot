@@ -6,6 +6,7 @@ from pymongo import MongoClient
 from common.exchangeadapter.abstract import ExchangeAdapter
 from common.openorder.manager import OpenOrderManager
 from common.utils.environment import parse_environ
+from common.utils.statistics import StatisticsRecorder
 
 
 class OrderManager:
@@ -23,6 +24,7 @@ class OrderManager:
         self.db = MongoClient(host=mongo_host, port=int(mongo_port))
         self.bot_id = params['bot_id']
         self.log = Logger(f"{self.bot_id}:{self.__class__.__name__}", host=elastic_host, port=int(elastic_port))
+        self.sr = StatisticsRecorder()
 
     def execute(self, exchange_name: str, symbol: str, side: str, type: str, amount: float, price: float = None, params={}):
         # Set order
@@ -31,6 +33,7 @@ class OrderManager:
         order['exchange'] = exchange_name
         collection = self.db['cbp']['orders']
         collection.update_one({'_id': order['id']}, {"$set": order}, upsert=True)
+        # self.sr.post_order(order)
         # Monitor Order
         self.oom.start(exchange_name, symbol, order['id'])
         # Log

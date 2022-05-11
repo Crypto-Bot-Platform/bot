@@ -7,6 +7,7 @@ from common.indicators.indicators import Indicators
 from common.schema.signals import SignalsSchema
 from common.time.time import Time
 from common.utils.environment import parse_environ
+from common.utils.statistics import StatisticsRecorder
 
 
 class Signals:
@@ -24,6 +25,7 @@ class Signals:
         self.timer = None
         self.em = events.EventManager(host=kafka_host, port=int(kafka_port))
         self.log = Logger(f"{self.bot_id}/{self.__class__.__name__}", host=elastic_host, port=int(elastic_port))
+        self.sr = StatisticsRecorder()
 
     def calculate(self):
         raise NotImplemented()
@@ -35,6 +37,7 @@ class Signals:
     def run(self, sleep=1):
         while True:
             try:
+                self.sr.post_health_check()
                 data = self.calculate()
                 self.em.send_command_to_address(f"{self.bot_id}-strategy", SignalsSchema, {
                     "timestamp": int(self.timer.now().timestamp() * 1000),
